@@ -3,10 +3,9 @@ locals {
     source = "${d}/${f}"
     target = "/${f}"
   }]]))
-  lxc_set_environment = { for key, value in var.exec.environment : "G76HJU3RFV_${key}" => "environment.${key}=${value}" }
 }
 
-resource "lxd_instance" "instance" {
+resource "lxd_instance" "lxd_instance" {
   name      = var.name
   image     = var.image
   profiles  = var.profiles
@@ -46,17 +45,16 @@ resource "lxd_instance" "instance" {
 }
 
 resource "null_resource" "local_exec_condition" {
-  count = var.exec.enabled ? 1 : 0
+  count = var.exec_enabled ? length(var.exec) : 0
   provisioner "local-exec" {
     command     = <<-EXEC
       while IFS='=' read -r key value ; do
         lxc config set ${var.name} $value
       done < <(env | grep "G76HJU3RFV_")
-      lxc exec ${var.name} -- bash -xe -c 'chmod +x ${var.exec.entrypoint} && ${var.exec.entrypoint}'
+      lxc exec ${var.name} -- bash -xe -c 'chmod +x ${var.exec[count.index].entrypoint} && ${var.exec[count.index].entrypoint}'
     EXEC
     interpreter = ["/bin/bash", "-c"]
-    environment = local.lxc_set_environment
+    environment = { for key, value in var.exec[count.index].environment : "G76HJU3RFV_${key}" => "environment.${key}=${value}" }
   }
-  depends_on = [lxd_instance.instance]
+  depends_on = [lxd_instance.lxd_instance]
 }
-

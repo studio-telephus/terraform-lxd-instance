@@ -3,7 +3,7 @@ variable "name" {
 }
 
 variable "image" {
-  type    = string
+  type = string
 }
 
 variable "profiles" {
@@ -36,11 +36,16 @@ variable "mount_dirs" {
   type = list(string)
 }
 
+variable "exec_enabled" {
+  type    = bool
+  default = false
+}
+
 variable "exec" {
-  type = object({
-    enabled     = bool
+  type = list(object({
     entrypoint  = string
     environment = map(any)
-  })
+  }))
+  default = []
 }
 
