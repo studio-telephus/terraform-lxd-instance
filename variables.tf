@@ -33,7 +33,8 @@ variable "autostart" {
 }
 
 variable "mount_dirs" {
-  type = list(string)
+  type    = list(string)
+  default = []
 }
 
 variable "exec_enabled" {
@@ -42,10 +43,17 @@ variable "exec_enabled" {
 }
 
 variable "exec" {
-  type = list(object({
-    entrypoint  = string
-    environment = map(any)
-  }))
+  type    = list(string)
   default = []
+}
+
+variable "environment" {
+  type    = map(any)
+  default = {}
+}
+
+variable "local_exec_interpreter" {
+  type    = list(string)
+  default = ["/bin/bash", "-c"]
 }
 

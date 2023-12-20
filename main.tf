@@ -51,10 +51,10 @@ resource "null_resource" "local_exec_condition" {
       while IFS='=' read -r key value ; do
         lxc config set ${var.name} $value
       done < <(env | grep "G76HJU3RFV_")
-      lxc exec ${var.name} -- bash -xe -c 'chmod +x ${var.exec[count.index].entrypoint} && ${var.exec[count.index].entrypoint}'
+      lxc exec ${var.name} -- bash -xe -c 'chmod +x ${var.exec[count.index]} && ${var.exec[count.index]}'
     EXEC
-    interpreter = ["/bin/bash", "-c"]
-    environment = { for key, value in var.exec[count.index].environment : "G76HJU3RFV_${key}" => "environment.${key}=${value}" }
+    interpreter = var.local_exec_interpreter
+    environment = { for key, value in var.environment : "G76HJU3RFV_${key}" => "environment.${key}=${value}" }
   }
   depends_on = [lxd_instance.lxd_instance]
 }
