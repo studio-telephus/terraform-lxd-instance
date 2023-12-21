@@ -43,8 +43,8 @@ variable "exec_enabled" {
 }
 
 variable "exec" {
-  type    = list(string)
-  default = []
+  type    = string
+  default = null
 }
 
 variable "environment" {
