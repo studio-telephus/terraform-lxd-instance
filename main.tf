@@ -2,7 +2,9 @@ locals {
   files = flatten(tolist([for d in var.mount_dirs : [for f in fileset(d, "**") : {
     source = "${d}/${f}"
     target = "/${f}"
-  }]]))
+    }
+    if !endswith(f, ".git") && !endswith(f, ".DS_Store")
+  ]]))
 }
 
 resource "lxd_instance" "lxd_instance" {
@@ -56,5 +58,6 @@ resource "null_resource" "local_exec_condition" {
     interpreter = var.local_exec_interpreter
     environment = { for key, value in var.environment : "G76HJU3RFV_${key}" => "environment.${key}=${value}" }
   }
-  depends_on = [lxd_instance.lxd_instance]
+  depends_on = [
+  lxd_instance.lxd_instance]
 }
