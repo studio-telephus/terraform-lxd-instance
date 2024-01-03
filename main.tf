@@ -5,6 +5,10 @@ locals {
     }
     if !endswith(f, ".git") && !endswith(f, ".DS_Store")
   ]]))
+
+  config = merge({
+    "boot.autostart" = false
+  }, { for key, value in var.environment : "environment.${key}" => value })
 }
 
 resource "lxd_instance" "lxd_instance" {
@@ -12,10 +16,7 @@ resource "lxd_instance" "lxd_instance" {
   image     = var.image
   profiles  = var.profiles
   ephemeral = false
-
-  config = {
-    "boot.autostart" = var.autostart
-  }
+  config    = local.config
 
   device {
     name       = var.nic.name
@@ -46,18 +47,14 @@ resource "lxd_instance" "lxd_instance" {
   }
 }
 
-resource "null_resource" "local_exec_condition" {
+resource "terraform_data" "local_exec_condition" {
   count = var.exec_enabled ? 1 : 0
   provisioner "local-exec" {
+    when        = create
     command     = <<-EXEC
-      while IFS='=' read -r key value ; do
-        lxc config set ${var.name} $value
-      done < <(env | grep "G76HJU3RFV_")
       lxc exec ${var.name} -- bash -xe -c 'chmod +x ${var.exec} && ${var.exec}'
     EXEC
     interpreter = var.local_exec_interpreter
-    environment = { for key, value in var.environment : "G76HJU3RFV_${key}" => "environment.${key}=${value}" }
   }
-  depends_on = [
-  lxd_instance.lxd_instance]
+  depends_on = [lxd_instance.lxd_instance]
 }
